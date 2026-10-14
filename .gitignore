@@ -1,0 +1,18 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+
+# The database is runtime state, never source. On a host it belongs on a
+# mounted volume; locally it sits in data/ and is excluded here.
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+
+*.log
+npm-debug.log*
+.DS_Store
+.idea/
+.vscode/
