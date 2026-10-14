@@ -12,6 +12,8 @@ import * as locate from "./locate.js";
 import * as route from "./route.js";
 import * as terminal from "./terminal.js";
 import * as calc from "./calc.js";
+import * as backup from "./backup.js";
+import * as sync from "./sync.js";
 import { commodityCommand, statusCommand } from "./sc.js";
 import * as ship from "./sc.js";
 
@@ -26,6 +28,8 @@ export const commands = [
   terminal,
   locate,
   hangar,
+  sync,
+  backup,
   poll,
   help,
   ping,
