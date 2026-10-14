@@ -54,6 +54,10 @@ console.log(`Database: ${dbPath}`);
 
 const now = () => Date.now();
 
+export function databasePath() {
+  return dbPath;
+}
+
 // --- Hangar -----------------------------------------------------------------
 
 export function addShip({ guildId, userId, shipName, quantity = 1, notes = null }) {
@@ -131,6 +135,50 @@ export function hangarTotals({ guildId }) {
          FROM hangar_ships WHERE guild_id = ?`,
     )
     .get(guildId);
+}
+
+// --- Whole-table reads, for backup and export -------------------------------
+
+// Every row, across every server. Used by /backup, which produces a file an
+// operator keeps off-platform — the one copy that survives losing the host.
+export function exportAll() {
+  return {
+    hangarShips: db
+      .prepare(
+        `SELECT id, guild_id, user_id, ship_name, quantity, notes, created_at
+           FROM hangar_ships ORDER BY guild_id, user_id, ship_name COLLATE NOCASE`,
+      )
+      .all(),
+  };
+}
+
+// Rows for one server, shaped for a spreadsheet: flat, human-readable, one row
+// per ship. Timestamps become ISO strings so a sheet can sort and filter them.
+export function exportForGuild({ guildId }) {
+  const rows = db
+    .prepare(
+      `SELECT user_id, ship_name, quantity, notes, created_at
+         FROM hangar_ships
+        WHERE guild_id = ?
+        ORDER BY user_id, ship_name COLLATE NOCASE`,
+    )
+    .all(guildId);
+
+  return rows.map((row) => ({
+    userId: row.user_id,
+    shipName: row.ship_name,
+    quantity: row.quantity,
+    notes: row.notes ?? "",
+    addedAt: new Date(row.created_at).toISOString(),
+  }));
+}
+
+export function closeDb() {
+  try {
+    db.close();
+  } catch {
+    // Already closed, or never opened — nothing to do.
+  }
 }
 
 export default db;
